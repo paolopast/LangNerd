@@ -11,6 +11,8 @@ export type QAResponse = {
 }
 
 export type GuideResponse = {
+  document_path: string
+  document_url: string
   guide: Record<string, any>
   sources: Source[]
   mode: 'guide'

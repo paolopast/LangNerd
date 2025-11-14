@@ -4,7 +4,7 @@ Stack completo (FastAPI + LangGraph + Gemini + React) che permette di:
 
 - rispondere a domande puntuali sui videogiochi usando ricerche web in tempo reale;
 - orchestrare la ragionamento con LangGraph e Gemini per mantenere contesto e citare fonti;
-- generare report strutturati con descrizione, trama, missioni, relazioni e lista trofei (PlayStation) mostrati direttamente nel browser.
+- generare report strutturati con descrizione, trama, missioni, relazioni e lista trofei (PlayStation) mostrati nel browser e scaricabili in HTML dettagliato.
 
 ## Prerequisiti
 
@@ -28,8 +28,8 @@ Su Windows usa `copy .env.example .env`; su macOS/Linux `cp .env.example .env`.
 
 Endpoint principali:
 
-- `POST /api/qa` -> risposte rapide + fonti.
-- `POST /api/guide` -> ritorna JSON strutturato con trama, missioni, trofei e approfondimenti.
+- `POST /api/qa` -> risposte rapide + fonti (HTML pronto per il frontend).
+- `POST /api/guide` -> ritorna JSON strutturato + percorso/URL dell'HTML esportato.
 - `GET /health` -> verifica stato.
 
 ## Frontend (Vite + React + TypeScript)
@@ -50,7 +50,8 @@ Lo `npm run build` produce gli asset statici in `frontend/dist`.
 1. **Classify node**: identifica se la richiesta e Q&A o guida strutturata e definisce le query web.
 2. **Search node**: chiama l'API professionale di SerpAPI (Google Search) per ottenere fonti fresche e localizzate.
 3. **Answer / Guide nodes**: Gemini elabora il contesto per risposte puntuali o per compilare la struttura JSON (trama, personaggi, missioni, trofei, approfondimenti).
-4. **Guide node**: restituisce la struttura finale che il frontend rende nel pannello di destra.
+4. **Guide node**: restituisce la struttura finale.
+5. **Export node**: costruisce un file HTML completo (missioni, trofei, trama estesa) salvato in `EXPORT_OUTPUT_DIR`.
 
 ## Testing rapido
 
@@ -66,10 +67,11 @@ Lo `npm run build` produce gli asset statici in `frontend/dist`.
 | `SERPAPI_API_KEY` | **Obbligatoria** per le ricerche SerpAPI |
 | `SEARCH_LANGUAGE` / `SEARCH_COUNTRY` | Parametri `hl`/`gl` di SerpAPI (es. `it`) |
 | `SEARCH_MAX_RESULTS` | Numero massimo di snippet per query |
+| `EXPORT_OUTPUT_DIR` | Cartella (relativa o assoluta) in cui salvare gli HTML generati |
 | `VITE_API_BASE_URL` (frontend) | URL del backend, es. `http://localhost:8000` |
 
 ## Note
 
 - Il backend effettua richieste web live, quindi serve connettivita internet.
-- Le guide vengono esposte direttamente dal frontend (niente download), sempre nella lingua richiesta (`it` default).
+- Ogni guida è visibile nel frontend e scaricabile via link `/generated/<nome>.html`.
 - Ricorda di proteggere la tua API key Gemini nelle distribuzioni in produzione.

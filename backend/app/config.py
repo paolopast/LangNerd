@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import os
 from functools import lru_cache
+from pathlib import Path
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
 
 
@@ -20,6 +22,10 @@ class Settings(BaseModel):
     search_language: str = Field(default="it", description="Language hint for SerpAPI (hl parameter)")
     search_country: str = Field(default="it", description="Country hint for SerpAPI (gl parameter)")
     search_max_results: int = Field(default=6, description="How many results to fetch per query")
+    export_output_dir: str = Field(
+        default="generated_guides",
+        description="Directory where generated HTML guides are stored",
+    )
 
 
 @lru_cache(maxsize=1)
@@ -40,6 +46,11 @@ def get_settings() -> Settings:
             "Generate one from https://serpapi.com/ and export it before starting the backend."
         )
 
+    export_dir = os.getenv("EXPORT_OUTPUT_DIR", "generated_guides")
+    export_dir_path = Path(export_dir)
+    if not export_dir_path.is_absolute():
+        export_dir_path = (BASE_DIR / export_dir_path).resolve()
+
     return Settings(
         google_api_key=api_key,
         gemini_model=os.getenv("GEMINI_MODEL", "gemini-1.5-flash"),
@@ -48,4 +59,5 @@ def get_settings() -> Settings:
         search_language=os.getenv("SEARCH_LANGUAGE", "it"),
         search_country=os.getenv("SEARCH_COUNTRY", "it"),
         search_max_results=int(os.getenv("SEARCH_MAX_RESULTS", "6")),
+        export_output_dir=str(export_dir_path),
     )

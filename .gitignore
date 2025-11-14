@@ -21,7 +21,7 @@ yarn-error.log*
 .pnp.*
 
 # Build artifacts
-backend/generated_pdfs/
+backend/generated_guides/
 .DS_Store
 .idea/
 .vscode/

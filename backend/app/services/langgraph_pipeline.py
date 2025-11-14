@@ -9,6 +9,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, START, StateGraph
 
 from app.config import Settings, get_settings
+from app.services.html_writer import GuideHTMLBuilder
 from app.services.search import search_web
 
 
@@ -23,6 +24,7 @@ class GuideState(TypedDict, total=False):
     search_results: List[Dict[str, str]]
     structured_guide: Dict[str, Any]
     answer: str
+    export_path: str
     sources: List[Dict[str, str]]
 
 
@@ -37,6 +39,7 @@ class LangGraphOrchestrator:
             convert_system_message_to_human=True,
             google_api_key=self.settings.google_api_key,
         )
+        self.html_builder = GuideHTMLBuilder(self.settings.export_output_dir)
         self.graph = self._build_graph()
 
     def _build_graph(self):
@@ -45,12 +48,14 @@ class LangGraphOrchestrator:
         workflow.add_node("search", self._run_search)
         workflow.add_node("answer", self._generate_answer)
         workflow.add_node("guide", self._generate_guide_structure)
+        workflow.add_node("export", self._generate_export)
 
         workflow.add_edge(START, "classify")
         workflow.add_edge("classify", "search")
         workflow.add_conditional_edges("search", self._route_after_search)
-        workflow.add_edge("guide", END)
+        workflow.add_edge("guide", "export")
         workflow.add_edge("answer", END)
+        workflow.add_edge("export", END)
 
         return workflow.compile()
 
@@ -207,6 +212,12 @@ class LangGraphOrchestrator:
     # ---------- routing ----------
     def _route_after_search(self, state: GuideState) -> str:
         return "guide" if state.get("mode") == "guide" else "answer"
+
+    def _generate_export(self, state: GuideState) -> GuideState:
+        guide = state.get("structured_guide") or {}
+        language = state.get("language") or self.settings.default_language
+        export_path = self.html_builder.build_html(guide, language=language)
+        return {**state, "export_path": export_path}
 
     # ---------- helpers ----------
     def _invoke_json_llm(self, prompt: str) -> Any:

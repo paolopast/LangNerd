@@ -32,6 +32,8 @@ class GuidePayload(BaseModel):
 
 
 class GuideResponse(BaseModel):
+    document_path: str = Field(..., description="Percorso locale dell'HTML generato")
+    document_url: str = Field(..., description="URL pubblico per scaricare l'HTML")
     guide: Dict[str, Any] = Field(..., description="Struttura dati generata dal LLM che il frontend visualizza")
     sources: List[SourceSchema]
     mode: Literal["guide"] = "guide"

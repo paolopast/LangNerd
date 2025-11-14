@@ -242,7 +242,7 @@ function App() {
                 </select>
               </label>
               <button type="submit" className="primary" disabled={loading.guide}>
-                {loading.guide ? 'Creo la guida...' : 'Genera guida'}
+                {loading.guide ? 'Creo la guida...' : 'Genera guida + HTML'}
               </button>
             </form>
           )}
@@ -273,6 +273,14 @@ function App() {
                 <h2>{guideResult.guide.game_title || guideForm.game}</h2>
                 <p className="subtitle small">Contenuto generato in tempo reale dal motore LangNerd.</p>
               </div>
+              <a
+                href={`${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'}${guideResult.document_url}`}
+                target="_blank"
+                rel="noreferrer"
+                className="primary ghost"
+              >
+                Scarica guida HTML
+              </a>
             </div>
             <div className="guide-grid">
               {guideResult.guide.elevator_pitch && (
@@ -341,7 +349,7 @@ function App() {
         ) : (
           renderEmptyState(
             'Nessuna guida ancora',
-            'Richiedi un gioco a sinistra per ottenere descrizione, trama e lista trofei dettagliata.'
+            'Richiedi un gioco a sinistra per ottenere descrizione, trama e lista trofei dettagliata + esportazione HTML.'
           )
         )}
       </div>
